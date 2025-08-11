@@ -20,5 +20,6 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('account/auth/', include('account.urls')),
+    path('cart/', include('cart.urls')),  # Added cart app URLs
 ]
 
