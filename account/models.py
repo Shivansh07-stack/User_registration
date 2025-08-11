@@ -10,7 +10,7 @@ class CustomUser(AbstractUser):
     mobile = models.CharField(max_length=14, unique=True)
     gender = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female')])
     address = models.TextField()
-    age = models.PositiveIntegerField()
+    age = models.PositiveIntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.username

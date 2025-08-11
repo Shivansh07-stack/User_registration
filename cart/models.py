@@ -24,3 +24,7 @@ class CartItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.product.name} in {self.cart.user.username}'s cart"  # Fixed __str__
+    
+    
+    
+    

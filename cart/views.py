@@ -1,7 +1,5 @@
-from django.shortcuts import render, redirect
-from .models import CartItem, Product
-from django.contrib.auth.decorators import login_required
-from rest_framework.decorators import api_view, permission_classes
+# cart/views.py
+from .models import Cart, CartItem, Product
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
@@ -15,7 +13,9 @@ class AddToCartView(APIView):
     def post(self, request, product_id):
         try:
             product = Product.objects.get(id=product_id)
-            cart = request.user.cart
+            # Corrected: Get or create the cart for the user
+            cart, created = Cart.objects.get_or_create(user=request.user)
+            
             cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
             if not created:
                 cart_item.quantity += 1
@@ -23,24 +23,27 @@ class AddToCartView(APIView):
             return Response({'message': 'Product added to cart.'}, status=status.HTTP_200_OK)
         except Product.DoesNotExist:
             return Response({'error': 'Product not found.'}, status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class CartDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        cart = request.user.cart
-        items = CartItem.objects.filter(cart=cart)
-        cart_items = []
-        total = 0
-        for item in items:
-            item_total = float(item.product.price) * item.quantity
-            cart_items.append({
-                'product': item.product.name,
-                'price': float(item.product.price),
-                'quantity': item.quantity,
-                'total': item_total
-            })
-            total += item_total
-        return Response({'items': cart_items, 'total': total}, status=status.HTTP_200_OK)
+        try:
+            # Corrected: Get the user's cart
+            cart = Cart.objects.get(user=request.user)
+            items = CartItem.objects.filter(cart=cart)
+            cart_items = []
+            total = 0
+            for item in items:
+                item_total = float(item.product.price) * item.quantity
+                cart_items.append({
+                    'product': item.product.name,
+                    'price': float(item.product.price),
+                    'quantity': item.quantity,
+                    'total': item_total
+                })
+                total += item_total
+            return Response({'items': cart_items, 'total': total})
+        except Cart.DoesNotExist:
+            return Response({'error': 'Cart not found.'}, status=status.HTTP_404_NOT_FOUND)
