@@ -47,3 +47,31 @@ class CartDetailView(APIView):
             return Response({'items': cart_items, 'total': total})
         except Cart.DoesNotExist:
             return Response({'error': 'Cart not found.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        
+
+class CartDiscountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request,dis):
+        try:
+            # Corrected: Get the user's cart
+            cart = Cart.objects.get(user=request.user)
+            items = CartItem.objects.filter(cart=cart)
+            cart_items = []
+            total = 0
+            for item in items:
+                item_total = float(item.product.price) * item.quantity
+                cart_items.append({
+                    'product': item.product.name,
+                    'price': float(item.product.price),
+                    'quantity': item.quantity,
+                    'total': item_total
+                })
+                total += item_total
+                
+            discount = dis*total/100
+            total_amount = total-discount    
+            return Response({'items': cart_items, 'total': total,'discount_percentage': str(dis)+"%","discount": discount, "total_after_discount": total_amount})
+        except Cart.DoesNotExist:
+            return Response({'error': 'Cart not found.'}, status=status.HTTP_404_NOT_FOUND)
