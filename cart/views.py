@@ -75,3 +75,15 @@ class CartDiscountView(APIView):
             return Response({'items': cart_items, 'total': total,'discount_percentage': str(dis)+"%","discount": discount, "total_after_discount": total_amount})
         except Cart.DoesNotExist:
             return Response({'error': 'Cart not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if dis < 0 or dis > 100:
+            return Response({'error': 'Invalid discount percentage.'}, status=status.HTTP_400_BAD_REQUEST)
+class RemoveFromCartView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, product_id):
+        try:
+            cart_item = CartItem.objects.get(id=product_id, cart__user=request.user)
+            cart_item.delete()
+            return Response({"message": "Item removed from cart"}, status=status.HTTP_204_NO_CONTENT)
+        except CartItem.DoesNotExist:
+            return Response({"error": "Item not found in your cart"}, status=status.HTTP_404_NOT_FOUND)
