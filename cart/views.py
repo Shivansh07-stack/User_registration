@@ -54,6 +54,8 @@ class CartDiscountView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request,dis):
+        if dis < 0 or dis > 100:
+            return Response({'error': 'Invalid discount percentage.'}, status=status.HTTP_400_BAD_REQUEST)
         try:
             # Corrected: Get the user's cart
             cart = Cart.objects.get(user=request.user)
@@ -75,8 +77,7 @@ class CartDiscountView(APIView):
             return Response({'items': cart_items, 'total': total,'discount_percentage': str(dis)+"%","discount": discount, "total_after_discount": total_amount})
         except Cart.DoesNotExist:
             return Response({'error': 'Cart not found.'}, status=status.HTTP_404_NOT_FOUND)
-        if dis < 0 or dis > 100:
-            return Response({'error': 'Invalid discount percentage.'}, status=status.HTTP_400_BAD_REQUEST)
+        
 class RemoveFromCartView(APIView):
     permission_classes = [IsAuthenticated]
 
