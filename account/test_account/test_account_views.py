@@ -71,9 +71,6 @@ def test_edit_user_view_mock(mock_is_valid, mock_save, api_client):
     assert response.json()["msg"] == "Profile updated"
     mock_save.assert_called_once()
 
-# ------------------------------
-# LogoutView Tests (mock token delete)
-# ------------------------------
 def test_logout_view_mock(api_client):
     mock_user = MagicMock()
     mock_user.auth_token.delete = MagicMock()
